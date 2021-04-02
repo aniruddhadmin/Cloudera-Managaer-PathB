@@ -1,0 +1,41 @@
+Download the REPO
+wget https://archive.cloudera.com/cm7/7.1.3/repo-as-tarball/cm7.1.3-redhat7.tar.gz
+sudo tar -zxvf cm7.1.3-redhat7.tar.gz -C /var/www/html
+ls -ld /var/www/html/*
+cd /etc/yum.repos.d/
+sudo nano cloudera-cm.repo
+
+[cloudera-manager]
+name=cloudera manager
+baseurl=http://ip-172-31-85-46.ec2.internal/cm7.1.3
+gpgcheck = 1
+gpgkey =http://ip-172-31-85-46.ec2.internal/cm7.1.3/RPM-GPG-KEY-cloudera
+
+sudo cp /etc/yum.repos.d/cloudera-cm.repo    /var/www/html/cm7.1.3/cloudera-cm.repo
+
+sudo yum clean all
+sudo yum repolist all
+
+echo -e  'y\n'| ssh-keygen -t rsa -P "" -f $HOME/.ssh/id_rsa
+    cat  ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && ssh localhost
+
+yes
+sudo yum install cloudera-manager-daemons cloudera-manager-server -y
+
+Create Cloudera SCM Database and its Permission
+mysql -u root -p
+create database clouderascm DEFAULT CHARACTER SET utf8;
+grant all on clouderascm.* TO 'clouderascm'@'%' IDENTIFIED BY 'Aniruddha@100';
+grant all on *.* to 'temp'@'%' identified by 'Aniruddha@100' with grant option;
+exit;
+sudo /opt/cloudera/cm/schema/scm_prepare_database.sh mysql -h 172.31.81.173 clouderascm clouderascm Aniruddha@100
+
+sudo service cloudera-scm-server start
+sudo service cloudera-scm-server status
+
+Login from the browser 
+
+Private Ip:7180
+
+Username= admin
+Password= admin
